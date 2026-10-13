@@ -9,8 +9,8 @@ approved chapters, while a side panel types out the chapter as it is written.
 
 ![Time-lapse: kickoff meeting and the chapter celebration](docs/media/office-timelapse.gif)
 
-Full time-lapse of the team writing 《羽球人生》 chapter 1 (about 2 minutes):
-[1080p60](docs/media/office-timelapse.mp4) · [720p web copy](docs/media/office-timelapse-web.mp4)
+Full time-lapse of the team writing chapters 1 and 2 of 《羽球人生》 (about 2 minutes):
+▶ [Full time-lapse (720p)](docs/media/office-timelapse-web.mp4)
 
 ## How it works
 
@@ -58,7 +58,8 @@ npm run dev            # http://localhost:5188
 ```bash
 npm test               # vitest: director, pacing, transcript import, pathfinding, bubbles, replay determinism
 npm run build          # static build in dist/ (replays only: live mode needs the dev server)
-node art/record.mjs    # frame-stepped 60 fps capture of the newest replay -> art/rec/<slug>.mp4 (needs ffmpeg)
+node art/record.mjs --speed=1.15   # frame-stepped 60 fps capture of the newest replay -> art/rec/<slug>.mp4 (needs ffmpeg)
+node art/media.mjs --gif=27-32,79.5-84.5   # docs/media: 1080p60 master, 720p web copy, 10 s GIF
 ```
 
 ## Richer replays from a run transcript

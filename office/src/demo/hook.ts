@@ -1,5 +1,5 @@
 // ?demo: the recorder (art/record.mjs) calls __demo.advance(1) then screenshots, so the capture is a
-// perfectly smooth 60 fps regardless of machine speed (adapted from digimon-survivor/src/demo).
+// perfectly smooth 60 fps regardless of machine speed.
 import type Phaser from 'phaser';
 
 const DT = 1 / 60;

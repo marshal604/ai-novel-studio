@@ -1,4 +1,4 @@
-// Batch-generate sprite sheets with Codex image generation (adapted from digimon-survivor/art/gen.mjs).
+// Batch-generate sprite sheets with Codex image generation.
 // Usage: node art/gen.mjs [id ...] [--force] [--jobs=3]
 // Output: art/raw/<id>.png (copied from ~/.codex/generated_images/<session>/).
 import { spawn } from 'node:child_process';
