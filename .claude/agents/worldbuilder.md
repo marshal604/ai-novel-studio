@@ -17,7 +17,7 @@ tools: Read, Write, Edit, Glob, Grep
 
 ## 審查模式
 H總編 給你：章節路徑、brief 路徑、sha、round。
-1. 讀 `continuity.md`、相關設定、章節全文。round 2 只看 H總編 指定的 issue 與修改處。
+1. 讀 `continuity.md`、相關設定、章節全文。round 2 只看 H總編 指定的 issue 與修改處；審查檔只列**仍未解決**的問題（已修好的不要再列），issue id 沿用原本的。
 2. 檢查：新名詞是否已建檔、與設定或前章矛盾、時間線、規則（運動比分、魔法限制等要逐步推演）、角色關係、物理上是否可能。
 3. 寫 `reviews/chNN.world.rK.json`（K = round）：
 ```json

@@ -47,3 +47,14 @@ test('setStatus rewrites only the status line', () => {
   assert.equal(parseFrontmatter(next).data.status, '通過');
   assert.equal(parseFrontmatter(next).body, parseFrontmatter(chapterText()).body);
 });
+
+test('CRLF files parse like LF files', () => {
+  const crlf = chapterText().replace(/\n/g, '\r\n');
+  assert.deepEqual(checkChapter(crlf).errors, []);
+  assert.equal(bodySha(crlf), bodySha(chapterText()));
+});
+
+test('an empty title is reported, not treated as a list', () => {
+  const text = chapterText().replace('title: "週四晚上"', 'title:');
+  assert.match(checkChapter(text).errors.join(), /title/);
+});

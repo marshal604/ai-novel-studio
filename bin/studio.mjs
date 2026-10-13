@@ -81,7 +81,14 @@ const commands = {
     return report(result);
   },
   metrics: () => { need(1); console.log(JSON.stringify(computeMetrics(parseJsonLines(readFileSync(args[0], 'utf8'))), null, 2)); return 0; },
-  hook: () => { handleHook(root, readFileSync(0, 'utf8')); return 0; },
+  hook: () => {
+    try {
+      handleHook(root, readFileSync(0, 'utf8'));
+    } catch (error) {
+      console.error(`studio hook skipped: ${error.message}`);
+    }
+    return 0;
+  },
 };
 
 try {

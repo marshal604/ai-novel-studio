@@ -47,3 +47,7 @@ test('handleHook never throws on bad input and appends valid events', () => {
   handleHook(root, JSON.stringify(write(`${root}/novels/b/chapters/ch01.md`)));
   assert.equal(readEvents(root).length, 1);
 });
+
+test('relative log paths are ignored too', () => {
+  assert.deepEqual(hookEvents('/r', write('logs/activity.jsonl')), []);
+});

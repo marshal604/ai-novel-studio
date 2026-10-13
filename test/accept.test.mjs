@@ -10,9 +10,10 @@ import { tempRoot, readEvents } from './helpers.mjs';
 
 const text = chapterText();
 const sha = bodySha(text);
+const slot = (data) => ({ round: data.round, data });
 const both = (critic = {}, world = {}) => ({
-  critic: { data: review({ chapter_sha: sha, ...critic }) },
-  world: { data: review({ reviewer: 'world', chapter_sha: sha, ...world }) },
+  critic: slot(review({ chapter_sha: sha, ...critic })),
+  world: slot(review({ reviewer: 'world', chapter_sha: sha, ...world })),
 });
 const evaluate = (overrides) => evaluateAcceptance({ chapter: 1, chapterText: text, reviews: both(), resolution: null, waive: [], reason: '', canonVerified: false, ...overrides });
 
@@ -30,7 +31,7 @@ test('invalid chapter frontmatter blocks', () => {
 
 test('a reject verdict blocks unless its serious issues are waived with a reason', () => {
   const reviews = both({ verdict: 'reject', issues: [issue({ severity: 'major' })] });
-  assert.match(evaluate({ reviews }).errors.join(), /reject/);
+  assert.match(evaluate({ reviews }).errors.join(), /C1 needs a round 2/);
   assert.match(evaluate({ reviews, waive: ['C1'] }).errors.join(), /reason/);
   assert.deepEqual(evaluate({ reviews, waive: ['C1'], reason: '風格取捨' }).errors, []);
 });
@@ -41,11 +42,9 @@ test('a blocker inside a conditional review cannot be closed by the writer alone
   assert.match(evaluate({ reviews, resolution: fixed }).errors.join(), /blocker/);
 });
 
-test('major issues must be fixed; declined needs a waiver', () => {
+test('a writer-declined major still needs round 2 or a waiver', () => {
   const reviews = both({ verdict: 'conditional', issues: [issue({ severity: 'major' })] });
-  assert.match(evaluate({ reviews }).errors.join(), /C1/);
-  assert.deepEqual(evaluate({ reviews, resolution: resolution([{ id: 'C1', action: 'fixed' }]) }).errors, []);
-  assert.match(evaluate({ reviews, resolution: resolution([{ id: 'C1', action: 'declined' }]) }).errors.join(), /declined/);
+  assert.match(evaluate({ reviews, resolution: resolution([{ id: 'C1', action: 'declined' }]) }).errors.join(), /C1/);
 });
 
 test('unresolved minor issues only warn', () => {
@@ -100,4 +99,52 @@ test('blocked acceptance writes nothing', () => {
   const before = readEvents(root).length;
   assert.ok(acceptChapter(root, 'b', 1, {}).errors.length > 0);
   assert.equal(readEvents(root).length, before);
+});
+
+test('a review in the wrong slot does not count as the other reviewer', () => {
+  const reviews = both({}, { reviewer: 'critic' });
+  assert.match(evaluate({ reviews }).errors.join(), /world slot/);
+});
+
+test('a resolution for another chapter is rejected', () => {
+  const reviews = both({ verdict: 'conditional', issues: [issue()] });
+  assert.match(evaluate({ reviews, resolution: { chapter: 2, issues: [] } }).errors.join(), /resolution/);
+});
+
+test('a major issue needs a later review round or a waiver even when fixed', () => {
+  const reviews = both({ verdict: 'conditional', issues: [issue({ severity: 'major' })] });
+  const fixed = resolution([{ id: 'C1', action: 'fixed' }]);
+  assert.match(evaluate({ reviews, resolution: fixed }).errors.join(), /round 2/);
+  assert.deepEqual(evaluate({ reviews, resolution: fixed, waive: ['C1'], reason: '已抽查' }).errors, []);
+});
+
+test('review rounds above 2 are refused', () => {
+  assert.match(evaluate({ reviews: both({ round: 3 }) }).errors.join(), /round/);
+});
+
+test('same-text re-run is a no-op even without the original waiver flags', () => {
+  const { root, dir } = setup();
+  writeFileSync(join(dir, 'reviews', 'ch01.critic.r2.json'), JSON.stringify(review({ round: 2, verdict: 'reject', chapter_sha: sha, issues: [issue({ severity: 'major' })] })));
+  assert.deepEqual(acceptChapter(root, 'b', 1, { waive: ['C1'], reason: '裁決' }).errors, []);
+  assert.equal(acceptChapter(root, 'b', 1, {}).noop, true);
+});
+
+test('re-accepting revised text with no delta removes stale canon', () => {
+  const { root, dir } = setup();
+  acceptChapter(root, 'b', 1, {});
+  const revised = chapterText({ body: '字'.repeat(1999) + '改' });
+  const newSha = bodySha(revised);
+  writeFileSync(join(dir, 'chapters', 'ch01.md'), revised);
+  writeFileSync(join(dir, 'reviews', 'ch01.critic.r2.json'), JSON.stringify(review({ round: 2, chapter_sha: newSha })));
+  writeFileSync(join(dir, 'reviews', 'ch01.world.r2.json'), JSON.stringify(review({ reviewer: 'world', round: 2, chapter_sha: newSha })));
+  assert.deepEqual(acceptChapter(root, 'b', 1, {}).errors, []);
+  assert.doesNotMatch(readFileSync(join(dir, 'worldbuilding', 'continuity.md'), 'utf8'), /4U 舊拍/);
+});
+
+test('registry progress reflects the highest accepted chapter', () => {
+  const { root, dir } = setup();
+  const record = { chapters: { 2: { sha: 'x' } } };
+  writeFileSync(join(dir, 'accepted.json'), JSON.stringify(record));
+  acceptChapter(root, 'b', 1, {});
+  assert.match(readFileSync(join(root, 'novels', 'registry.md'), 'utf8'), /第2章通過/);
 });

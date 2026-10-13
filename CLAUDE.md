@@ -22,13 +22,13 @@
    有 questions → 你回答（設定問題可先問 `worldbuilder`），再呼叫 `writer` 一次。
 3. **檢查**：`node bin/studio.mjs check novels/<slug>/chapters/chNN.md`（error 退回 writer），再 `sha` 同一檔。
 4. **並行審查**：**同一則訊息**呼叫 `critic` 與 `worldbuilder`（審查模式），給章節路徑、brief 路徑、sha、round=1。
-5. **處理結果**（最多 2 輪審查）：
+5. **處理結果**（最多 2 輪審查，`studio accept` 會強制）：
    - 兩者 pass → 第 6 步。
-   - conditional → `writer` 依審查檔修改並寫 `reviews/chNN.resolution.json`。
-     minor 由你 Grep 抽查；有 major 時由提出的審查者做 round 2，只看那幾個 issue。
-   - reject 或有 blocker → `writer` 修改 → 只由退件的審查者做 round 2。
-   - round 2 仍未解決 → 你裁決：`--waive` 附理由，或擱置並回報人類。不得第 3 輪。
-   - writer `declined` 的 major 只是提案，你要決定接受（waive）或要求修改。
+   - 有 issue → `writer` 依審查檔修改並寫 `reviews/chNN.resolution.json`。
+   - 只有 minor → 你 Grep 抽查即可。
+   - 有 major / blocker 或 reject → 由**提出該 issue 的審查者**做 round 2，只看那幾個 issue 與修改處。
+   - round 2 仍有 major / blocker → 你裁決：`--waive` 附理由，或擱置並回報人類。不得第 3 輪。
+   - writer `declined` 的 major 只是提案：你同意就 waive，不同意就要求修改。
 6. **定稿**：`node bin/studio.mjs accept <slug> <N> [--waive C1,W2 --reason "..."] [--canon-verified]`
    - 腳本會擋下不合規的定稿並說明原因；照訊息補齊，不要手改 accepted.json。
    - 有 `world ... older text` 錯誤：確認 continuity_delta 仍符合最終稿（不符就請 worldbuilder 改審查檔）再加 `--canon-verified`。

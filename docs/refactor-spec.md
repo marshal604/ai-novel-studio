@@ -35,7 +35,7 @@ novels/{slug}/
 ### T2 Hook：`studio hook`
 - PostToolUse(Write|Edit)：依 `agent_type`（優先）或路徑判斷角色，寫 `task: 檔案更新: <name>`；略過 logs/ 內檔案。
 - SubagentStart/SubagentStop：寫 `status: working` / `status: idle`，novel 取 `novels/.current`。
-- 驗收：任何錯誤都不讓 hook 失敗（exit 0），未知 agent_type 歸 H總編。
+- 驗收：任何錯誤（含 stdin 讀取）都不讓 hook 失敗（exit 0）；檔案寫入找不到角色時歸 H總編；非辦公室 subagent（Explore 等）的 start/stop 不記錄。
 
 ### T3 章節檢查：`studio check <chapter>` 與 `studio sha <chapter>`
 - frontmatter 必填：chapter、title、version、status（審查中|條件通過修改中|退件修改中|通過）、last_modified、changelog。
@@ -49,12 +49,12 @@ novels/{slug}/
 - 建目錄與空白檔、registry 新增一列、寫 `novels/.current`、log task。重跑不重複 registry。
 
 ### T6 定稿：`studio accept <slug> <n> [--waive ids --reason 文字] [--canon-verified]`
-- 擋下：check 錯誤；缺任一審查；最新輪 reject 且其 blocker/major 未全數豁免；
-  blocker 未豁免；major 未 fixed 也未豁免；`declined` 未豁免；
-  world 審查 sha 與正文不符且有 continuity_delta 卻沒 `--canon-verified`。
-- 警告：minor 未處理、審查 sha 過期。
-- 成功：章節 status→通過、continuity.md 以 `<!-- chNN -->` 區段寫入（重跑取代不重複）、
-  registry 進度、accepted.json、log decision。同 sha 重跑為 no-op。
+- 擋下：check 錯誤；缺任一審查；審查檔的 reviewer / chapter / round 與檔名不符；round > 2；
+  resolution 的 chapter 不符；最新輪仍有未豁免的 blocker / major（作家 fixed 不算，要 round 2 複核或豁免）；
+  reject 但沒有可豁免的 issue；world 審查 sha 與正文不符且有 continuity_delta 卻沒 `--canon-verified`；`--waive` 沒附 `--reason`。
+- 警告：minor 未修或被 declined（作家的創作判斷）、審查 sha 過期、豁免了不存在的 id。
+- 成功：章節 status→通過、continuity.md 以 `<!-- chNN:start/end -->` 區段取代（delta 為空時移除舊區段）、
+  registry 進度取已定稿的最大章、log decision、最後寫 accepted.json。同 sha 重跑直接 no-op（不再檢查 gate）。
 
 ### T7 量測：`studio metrics <stream.jsonl>`
 - 從 stream-json 算：花費、tokens、主 session 重入次數、工具呼叫分佈、subagent 次數與 tokens、手寫 log 次數。
