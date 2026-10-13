@@ -106,3 +106,35 @@ Codex 對 `lib/` 與文件做 read-only 審查，提出 11 點。
 | 相對路徑的 log 檔沒被忽略 | 接受：先 resolve |
 | declined 的 minor 應擋下 | 拒絕：minor 是作家的創作判斷，只警告 |
 | frontmatter 重複 key 要擋 | 拒絕：YAGNI，frontmatter 由 H作家 依模板產生 |
+
+## 5. 實測：新流程寫第二章（2026-10-14）
+
+指令：`claude -p "<H總編 指示>" --model sonnet --permission-mode acceptEdits --allowedTools "Bash Read Write Edit Glob Grep Task" --output-format stream-json`。
+transcript：`/tmp/claude-501/novel-run-ch2.jsonl`，用 `studio metrics` 計算。
+產出：大綱補第二章、brief、第二章《正拍》2685 漢字（v2）、兩位審查各 2 輪、`studio accept` 通過（無豁免）。
+
+| 指標 | 舊（大綱 + 設定 + ch1） | 新（大綱補充 + ch2） |
+|------|------|------|
+| 花費 | US$1.54 | **US$0.87**（-43%） |
+| 牆鐘時間 | 6 分 07 秒 | **4 分 18 秒**（-30%） |
+| output tokens | 52.6k | 26.6k |
+| cache read / write | 3.04M / 238k | 1.04M / 174k |
+| H總編 被喚醒 | 11 | 7（見下方問題 1，已修） |
+| subagent 執行 / tokens | 12 / 608k | 6 / 150k（平均每次 50k → 25k） |
+| 工具呼叫 | 67 | 50 |
+| 手寫 log | 18 | **0** |
+| SendMessage | 18 | 0 |
+| 審查輪數 | 1（條件通過，不重審） | 2（兩邊都有 major，依規則複核） |
+
+不是完全同條件：舊的包含一次世界觀建立（約 50k tokens 的 subagent 執行），新的多跑了一輪審查。
+扣掉設定後兩者的單章成本差距大致相當，新流程在多做一輪複核的情況下仍便宜約四成。
+
+### 實測發現的問題
+1. **subagent 仍在背景執行**：此版 Claude Code（2.1.296）預設把 Agent 呼叫放背景，H總編 等通知時被喚醒 7 次，其中 2 次只是「等另一位」。
+   修正：`.claude/settings.json` 加 `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1`；用 Haiku 煙霧測試確認 `is_backgrounded=false`、單一 result。
+   預期再省約 5%（多數重入本來就是必要步驟，只是換成同一輪內的 request）。
+2. **subagent 載入不需要的 CLAUDE.md**：文件指出自訂 subagent 預設載入所有 CLAUDE.md（含使用者全域規則）。修正：三個角色加 `omitClaudeMd: true`。
+3. **hook 有正確收到 `agent_type`**：檔案更新與 working/idle 都歸到正確角色，`novel` 欄位正確。
+   H作家 修稿時 9 次 Edit 產生 9 筆「檔案更新: ch02.md」，畫面可能需要合併顯示（未改，交給 office app）。
+4. **主 session 基本 context 約 50k**，來自 Claude Code 系統提示與使用者全域外掛／規則，不在本 repo 控制範圍，是目前 H總編 成本的大宗（cache read 797k / 1.04M）。
+5. 專案未被信任時 `permissions.allow` 被忽略；headless 執行用 `--allowedTools` 即可。
