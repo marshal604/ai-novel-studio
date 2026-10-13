@@ -1,25 +1,48 @@
 {
+  "env": {
+    "CLAUDE_CODE_DISABLE_BACKGROUND_TASKS": "1"
+  },
   "language": "繁體中文",
   "permissions": {
-    "allow": ["Bash(node bin/studio.mjs:*)"]
+    "allow": [
+      "Bash(node bin/studio.mjs:*)"
+    ]
   },
   "hooks": {
     "PostToolUse": [
       {
         "matcher": "Write|Edit",
-        "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/bin/studio.mjs\" hook", "timeout": 5 }]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/bin/studio.mjs\" hook",
+            "timeout": 5
+          }
+        ]
       }
     ],
     "SubagentStart": [
       {
         "matcher": "^(writer|worldbuilder|critic)$",
-        "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/bin/studio.mjs\" hook", "timeout": 5 }]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/bin/studio.mjs\" hook",
+            "timeout": 5
+          }
+        ]
       }
     ],
     "SubagentStop": [
       {
         "matcher": "^(writer|worldbuilder|critic)$",
-        "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/bin/studio.mjs\" hook", "timeout": 5 }]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/bin/studio.mjs\" hook",
+            "timeout": 5
+          }
+        ]
       }
     ]
   }

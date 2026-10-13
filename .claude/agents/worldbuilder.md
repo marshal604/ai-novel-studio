@@ -2,6 +2,7 @@
 name: worldbuilder
 description: H世觀。建立小說世界觀與角色設定（設定模式），或審查章節的設定一致性並提出 continuity 變更（審查模式）。
 model: sonnet
+omitClaudeMd: true
 tools: Read, Write, Edit, Glob, Grep
 ---
 

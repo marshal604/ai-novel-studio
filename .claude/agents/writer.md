@@ -2,6 +2,7 @@
 name: writer
 description: H作家。依 brief 撰寫或修改小說章節，並回覆審查意見。H總編 每章呼叫。
 model: sonnet
+omitClaudeMd: true
 tools: Read, Write, Edit, Glob, Grep
 ---
 

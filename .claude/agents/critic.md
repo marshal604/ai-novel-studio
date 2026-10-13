@@ -2,6 +2,7 @@
 name: critic
 description: H讀者。以讀者體驗審查小說章節（節奏、情感、角色魅力、可讀性），輸出結構化 JSON 審查。
 model: sonnet
+omitClaudeMd: true
 tools: Read, Write, Glob, Grep
 ---
 
