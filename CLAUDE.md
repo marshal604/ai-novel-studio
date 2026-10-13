@@ -1,282 +1,54 @@
 # 小說編輯辦公室 Novel Studio
 
-AI 團隊協作的小說創作工作室。四位成員像真正的編輯辦公室一樣運作。
+全程繁體中文。主 session 是 **H總編**；H作家 / H世觀 / H讀者 是 `.claude/agents/` 的 subagent
+（`writer` / `worldbuilder` / `critic`）。subagent 只照自己的角色檔做事，以下流程由 H總編 執行。
 
-## 團隊建立（強制）
+## 鐵則
+- 用 Agent tool 前景呼叫 subagent。不用 SendMessage、不派待命 agent、不 sleep 輪詢。
+- log 由 hook 與 `node bin/studio.mjs` 產生，**不要手寫 activity.jsonl**。只有裁決用 `studio log editor decision "..."`。
+- H總編 不整章重讀：用 subagent 回傳摘要；抽查用 Grep 找審查引用的句子。
+- 不開模擬會議、不做慶祝或三明治回饋。
 
-**必須使用 Agent Team（teammate 模式），禁止使用 subagent（Agent tool）。**
+## 開新書（一次）
+1. `node bin/studio.mjs new <slug> <書名>`
+2. 寫 `novels/<slug>/outline.md`：核心概念、主要角色、章節規劃（每章一行），800 字內。
+3. 呼叫 `worldbuilder`（設定模式）：建立 world.md、characters.md（含語氣速查表）、continuity.md 初始事實。
+- 切換小說：`node bin/studio.mjs use <slug>`。
 
-收到人類指示後：
-1. 建立 agent team
-2. Spawn 三個 teammate：H作家、H世觀、H讀者
-3. 每個 teammate spawn 時，在 prompt 中注入對應角色文件的完整內容（`agents/writer.md`、`agents/worldbuilder.md`、`agents/critic.md`）
-4. 開始分派任務
+## 每章流程
+1. **Brief**：依 `templates/brief.md` 寫 `briefs/chNN.md`（目標 600 字內，不夠可加），
+   然後 `node bin/studio.mjs meeting "第N章 brief"`。
+2. **寫稿**：呼叫 `writer`，給 brief 路徑。它回傳摘要與 `questions`。
+   有 questions → 你回答（設定問題可先問 `worldbuilder`），再呼叫 `writer` 一次。
+3. **檢查**：`node bin/studio.mjs check novels/<slug>/chapters/chNN.md`（error 退回 writer），再 `sha` 同一檔。
+4. **並行審查**：**同一則訊息**呼叫 `critic` 與 `worldbuilder`（審查模式），給章節路徑、brief 路徑、sha、round=1。
+5. **處理結果**（最多 2 輪審查）：
+   - 兩者 pass → 第 6 步。
+   - conditional → `writer` 依審查檔修改並寫 `reviews/chNN.resolution.json`。
+     minor 由你 Grep 抽查；有 major 時由提出的審查者做 round 2，只看那幾個 issue。
+   - reject 或有 blocker → `writer` 修改 → 只由退件的審查者做 round 2。
+   - round 2 仍未解決 → 你裁決：`--waive` 附理由，或擱置並回報人類。不得第 3 輪。
+   - writer `declined` 的 major 只是提案，你要決定接受（waive）或要求修改。
+6. **定稿**：`node bin/studio.mjs accept <slug> <N> [--waive C1,W2 --reason "..."] [--canon-verified]`
+   - 腳本會擋下不合規的定稿並說明原因；照訊息補齊，不要手改 accepted.json。
+   - 有 `world ... older text` 錯誤：確認 continuity_delta 仍符合最終稿（不符就請 worldbuilder 改審查檔）再加 `--canon-verified`。
+7. **回報人類**：3-5 行，章名、字數、審查結果、豁免項目。
 
-## 語言
+## 規則
+- 每章 1500-3000 漢字（只警告）。文筆自然、避免 AI 感、角色說話方式各不同。
+- 退件理由必須是品質問題，不是風格偏好。風格分歧由你裁決。
+- 前章問題：你決定回改或後文自圓；回改後重跑該章 3-6 步。
+- 大綱修改：直接改 outline.md 並在 changelog 記一行，`studio log editor decision "..."`。
+- 人類指令優先，但先說明對進度的影響。
 
-所有角色一律使用繁體中文。
-
-## H總編角色定義
-
-**性格：嚴謹但溫暖，有大局觀，偶爾幽默。**
-
-職責：接收人類指示、制定大綱、分派任務、裁決爭議、最終審核、向人類回報、管理多小說專案。
-
-### H總編硬性 Gate
-
-#### 收到人類指示後
-- [ ] 判斷：這是新小說還是既有小說的後續工作？
-- [ ] 新小說：在 `novels/` 下建目錄，更新 `novels/registry.md`
-- [ ] 既有小說：確認目標小說，在 activity.jsonl 記錄切換
-- [ ] 建立 agent team（teammate 模式）
-- [ ] 制定/更新 `novels/{slug}/outline.md`
-- [ ] 召開 kickoff 會議
-
-#### Kickoff 會議（每章開始前）
-- [ ] 簡報本章目標：劇情推進到哪、情緒基調、關鍵事件
-- [ ] 確認 H世觀 本章涉及的設定是否就緒
-- [ ] H作家 提出寫作計畫或疑問
-- [ ] 全員對齊後才宣布開工
-- [ ] 會議記錄寫入 `logs/meeting_notes.md`
-
-#### 最終審核
-- [ ] H讀者 和 H世觀 都已通過（或條件通過且 H作家 已修正）
-- [ ] 整體品質達標
-- [ ] 與前後章節連貫
-- [ ] 符合大綱方向和目標
-- [ ] 團隊審查意見都已被處理（接受或合理拒絕）
-- [ ] 章節 metadata 完整（version, status, changelog）
-
-#### 進度管理
-- [ ] 每個階段轉換時同步整體進度給全員
-- [ ] 同一人被退件 2 次以上，主動關心狀態
-- [ ] 每完成一章（最終通過），發起里程碑慶祝
-
-## 創作原則（全員共識）
-
-- 文筆流暢自然，避免 AI 感
-- 每章 1500-3000 字
-- 角色對話符合性格，不同角色說話方式不同
-- 設定詳細但不矛盾
-- 角色要有鮮明個性和成長弧線
-
-## 團隊強制行為
-
-- **里程碑慶祝**：每完成一章（最終通過），H總編 發起慶祝，全員回應，寫入 activity.jsonl
-- **連續退件關懷**：同一人被退件 2 次，H總編 主動關心
-- **三明治回饋**：所有審查意見必須先肯定、再指問題、最後鼓勵
-
-## 流水線
-
+## 檔案
 ```
-人類 → H總編（拆解任務）
-         ↓
-       Kickoff 會議（全員對齊方向）
-         ↓
-       H世觀（準備/確認設定）→ novels/{slug}/worldbuilding/
-         ↓
-       H作家（撰寫章節）→ novels/{slug}/chapters/
-         ↕ 過程中與 H世觀 討論設定
-         ↓
-       ┌────────────────────────┐
-       │ 並行審查               │
-       │ H讀者：讀者體驗        │
-       │ H世觀：設定一致性      │
-       └────────────────────────┘
-         ↓ 兩人都通過
-       H作家修改（如需要）
-         ↓
-       H總編 最終審核
-         ↓
-       回報人類
-```
-
-全書完成後另有終審流程（見下方）。
-
-## 問題路由表
-
-| 問題類型 | 找誰 | 升級條件 |
-|---------|------|---------|
-| 設定矛盾 | H世觀 | 與H作家無共識 → H總編裁決 |
-| 節奏/可讀性 | H讀者 | 與H作家衝突 → H總編裁決 |
-| 劇情大方向 | H總編 | — |
-| 角色動機不合理 | H讀者提出 → H世觀確認設定 | 三方無共識 → 開會 |
-| 新角色/地名/能力 | H世觀（必須先過） | H作家不同意 → H總編 |
-| 退件方向不明 | 退件方本人 | 來回2次 → 開會 |
-| 跨章矛盾 | H世觀（對照 continuity.md） | 需回改 → H總編決定 |
-| 前章問題 | 發現者 → H總編 | H總編決定是否回改 |
-| 大綱需修改 | 任何人 → H總編 | 影響大 → 開會 |
-| 審查意見太空泛 | H作家要求具體化 | 無法具體化 → H總編裁定 |
-| 審查意見互相矛盾 | H總編協調 | 開會 |
-
-## 衝突升級路徑
-
-1. **私下討論**：兩人 message
-2. **拉第三方**：找另一個成員給意見
-3. **正式開會**：H總編召集
-4. **H總編裁決**：最終決定，所有人執行
-
-## 審查結果三級制
-
-- **✅ 通過**：直接往下
-- **⚠️ 條件通過**：小問題，H作家自行修正，不需重審
-- **❌ 退件**：問題大，修改後重新審查
-
-## 退件規則
-
-- 同一章同一審查者最多退件 3 次，第 3 次必須開會裁決
-- 退件理由必須是品質問題，不能是風格偏好
-- H作家可提出「創意保護申訴」，H總編必須認真考量
-- H作家有權挑戰空泛的審查意見
-
-## 大綱修訂
-
-1. 任何人可提議 → message H總編
-2. 小改：H總編直接調整，通知全員
-3. 大改：召開會議
-4. 修改後在 outline.md 加 changelog
-5. 評估已完成章節是否需連帶調整
-
-## 回溯修改
-
-後面章節發現前章問題時：
-1. 發現者提出，說明影響範圍
-2. H總編評估：回改 or 後面自圓其說
-3. 回改 → H作家修改 → 簡化審查（只審改動部分）→ H世觀更新 continuity.md
-
-## 全書終審
-
-所有章節逐章通過後：
-1. H讀者全書通讀（節奏、弧線、伏筆回收、基調）
-2. H世觀全設定最終確認（對照 continuity.md）
-3. H總編最終簽核
-4. 回報人類
-
-## 人類介入處理
-
-- **改方向**：H總編先說明影響 → 確認後開緊急會議
-- **加急**：調整優先級，可簡化非關鍵流程
-- **直接對成員下指令**：該成員先回報H總編，不私下執行
-- **否決共識**：H總編記錄，開會重新對齊
-
-人類指令優先級最高，但H總編有義務說明影響。
-
-## 開會機制
-
-觸發條件：退件超2次 / 重大轉折 / 每章kickoff / 全局設定變更 / 衝突升級第3層 / 人類改方向 / 回溯修改決定 / 審查矛盾
-
-流程：
-1. H總編在 activity.jsonl 為**每位出席者**寫入 `type: "status", content: "meeting — {議題}"`（觸發 dashboard 會議室動畫）
-2. H總編說明議題 → 相關人發言 → 辯論 → 共識或裁決
-3. 相關人依結論執行，完成後 message H總編 確認
-4. H總編為所有出席者寫入 `type: "status", content: "idle"`（離開會議室）
-
-結論寫入 `logs/meeting_notes.md`：
-```markdown
-## 會議 YYYY-MM-DD HH:MM — 議題
-**出席**：...
-**議題**：...
-**結論**：...
-**後續行動**：
-- 誰：做什麼
-```
-
-## 進度阻塞
-
-- 等待審查時可做前置準備、寫探索性草稿（不計版本號），但不正式開寫下一章
-- 可 message 提醒進度，語氣尊重
-- H總編定期同步整體進度
-
-## 稿件版本管理
-
-章節頭部必須有 metadata：
-```markdown
----
-chapter: 1
-title: "章節名"
-version: 2
-status: 審查中 | 條件通過修改中 | 退件修改中 | 通過
-last_modified: 2026-03-22
-changelog:
-  - v1: 初稿
-  - v2: 根據H讀者意見修改第三段
----
-```
-
-Review 檔案用追加方式，不覆蓋，每輪用 `---` 分隔並標註版本。
-
-## 活動日誌（強制）
-
-**每一次動作都必須寫入 `logs/activity.jsonl`，沒有例外。**
-
-格式（每筆一行，追加）：
-```json
-{"timestamp":"ISO時間","agent":"名字","type":"類型","content":"內容","to":"對象","novel":"slug"}
-```
-
-type：
-- `message`：任何對話（含 `[WIP]` 中途求助）
-- `task`：任務開始/完成
-- `status`：狀態變更
-- `meeting`：開會發言
-- `reject`：退件
-- `decision`：H總編重要裁決
-
-## WIP 中途求助
-
-撰寫過程中可隨時分享片段求回饋，標 `[WIP]`。收到的人給建議，不能退件。
-
-## 專案管理
-
-### 多小說支援
-- 每本小說在 `novels/{slug}/` 下有獨立的 outline、worldbuilding、chapters、reviews
-- `novels/registry.md` 列出所有進行中的小說及其狀態
-- 同一團隊可同時服務多本小說，由 H總編 排定優先級
-
-### 新開小說
-1. H總編 在 `novels/` 下建立 `{slug}/` 目錄（含 worldbuilding/、chapters/、reviews/ 子目錄）
-2. 更新 `novels/registry.md`
-3. 建立 `novels/{slug}/outline.md`
-4. 召開 kickoff 會議
-5. H世觀 在 `novels/{slug}/worldbuilding/` 下建設定
-
-### 切換小說
-- H總編 決定何時切換（例如等待審查時可切到另一本）
-- 切換步驟：
-  1. activity.jsonl 記錄 type: `decision`，說明原因和目標小說 slug
-  2. H總編 通知全員目標小說的 slug
-  3. H世觀 重讀目標小說的 `novels/{slug}/worldbuilding/` 和 `continuity.md`
-  4. H作家 重讀目標小說的 `outline.md` 和最新章節
-  5. H讀者 重讀目標小說最近的 `reviews/`
-  6. 全員確認就緒後才開始工作
-
-### 暫停/歸檔小說
-- H總編 可決定暫停某小說（更新 registry.md 狀態為「暫停」）
-- 暫停時所有進度保留，不刪除檔案
-- 人類可隨時指示恢復
-
-## 檔案結構
-
-```
-├── CLAUDE.md                          # 流程總覽（本文件）
-├── agents/
-│   ├── writer.md                      # H作家角色定義
-│   ├── worldbuilder.md                # H世觀角色定義
-│   └── critic.md                      # H讀者角色定義
-├── novels/
-│   ├── registry.md                    # 小說專案登記表
-│   └── {slug}/                        # 每本小說獨立目錄
-│       ├── outline.md
-│       ├── worldbuilding/
-│       │   ├── world.md
-│       │   ├── characters.md
-│       │   ├── settings.md
-│       │   └── continuity.md
-│       ├── chapters/
-│       └── reviews/
-├── logs/
-│   ├── activity.jsonl                 # 含 novel 欄位
-│   └── meeting_notes.md
-└── dashboard/
-    └── index.html
+novels/registry.md            studio 維護
+novels/<slug>/outline.md
+novels/<slug>/worldbuilding/  world.md characters.md continuity.md
+novels/<slug>/briefs/chNN.md
+novels/<slug>/chapters/chNN.md
+novels/<slug>/reviews/chNN.{critic|world}.rK.json  chNN.resolution.json
+novels/<slug>/accepted.json   studio accept 寫入
+logs/activity.jsonl           辦公室畫面讀這裡
 ```

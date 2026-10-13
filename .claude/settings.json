@@ -1,41 +1,25 @@
 {
-  "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
-  },
   "language": "繁體中文",
+  "permissions": {
+    "allow": ["Bash(node bin/studio.mjs:*)"]
+  },
   "hooks": {
     "PostToolUse": [
       {
         "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "jq -r '.tool_input.file_path // .tool_response.filePath // empty' | { read -r f; [ -n \"$f\" ] || exit 0; case \"$f\" in */activity.jsonl|*/meeting_notes*) exit 0;; esac; a='H總編'; case \"$f\" in *worldbuilding*|*world*|*characters*|*settings*|*continuity*) a='H世觀';; *chapters*|*ch[0-9]*) a='H作家';; *reviews*|*review*) a='H讀者';; *outline*) a='H總編';; esac; n=''; case \"$f\" in */novels/*/*)n=$(echo \"$f\"|sed 's|.*/novels/\\([^/]*\\)/.*|\\1|');; esac; echo \"{\\\"timestamp\\\":\\\"$(date +%Y-%m-%dT%H:%M:%S+08:00)\\\",\\\"agent\\\":\\\"$a\\\",\\\"type\\\":\\\"task\\\",\\\"content\\\":\\\"檔案更新: $(basename \"$f\")\\\"$([ -n \\\"$n\\\" ]&&echo \",\\\"novel\\\":\\\"$n\\\"\"||true)}\" >> \"$PWD/logs/activity.jsonl\"; } 2>/dev/null || true",
-            "timeout": 5
-          }
-        ]
+        "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/bin/studio.mjs\" hook", "timeout": 5 }]
       }
     ],
-    "TaskCompleted": [
+    "SubagentStart": [
       {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "cat >> \"$PWD/logs/hook-debug-task.json\"",
-            "timeout": 5
-          }
-        ]
+        "matcher": "^(writer|worldbuilder|critic)$",
+        "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/bin/studio.mjs\" hook", "timeout": 5 }]
       }
     ],
-    "TeammateIdle": [
+    "SubagentStop": [
       {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "cat >> \"$PWD/logs/hook-debug-idle.json\"",
-            "timeout": 5
-          }
-        ]
+        "matcher": "^(writer|worldbuilder|critic)$",
+        "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/bin/studio.mjs\" hook", "timeout": 5 }]
       }
     ]
   }
