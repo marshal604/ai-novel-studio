@@ -3,4 +3,11 @@
 node_modules/
 logs/*
 !logs/.gitkeep
+!logs/activity.jsonl
 novels/.current
+office/node_modules/
+office/dist/
+office/art/raw/
+office/art/rec/
+office/art/contact/
+*.log

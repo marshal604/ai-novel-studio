@@ -1,0 +1,62 @@
+{
+ "style": "Art style: cute 16-bit pixel art (SNES-era cozy RPG look), top-down three-quarter view, warm saturated palette, crisp 1-pixel dark outline, light from the top-left, chunky visible pixels, NO text, letters or numbers anywhere. Characters are chibi (big head, about 2.5 heads tall).",
+ "sheetLayout": "Layout: a strict grid of 4 rows x 4 columns of EQUAL SQUARE cells (256x256 each) on a flat pure #FF00FF magenta background. One full-body pose per cell, the character centred in its cell and filling about 70% of the cell height, the SAME scale and the SAME baseline (feet on the same horizontal line) in every cell, nothing crossing cell borders, no shadows on the magenta, no grid lines, no props on the floor.",
+ "propsLayout": "Layout: a strict grid of 4 rows x 4 columns of EQUAL SQUARE cells (256x256 each) on a flat pure #FF00FF magenta background. Exactly ONE separate object per cell, centred, filling about 80% of its cell, nothing crossing cell borders, no drop shadows on the magenta, no grid lines, no people.",
+ "jobs": {
+  "editor_a": {
+   "ref": "ref/style_seed.png",
+   "layout": "sheet",
+   "prompt": "Rows, top to bottom: 1. walk_down: 4-frame walk cycle facing the viewer (legs clearly alternating). 2. walk_up: 4-frame walk cycle seen from behind. 3. walk_side: 4-frame walk cycle facing RIGHT in profile. 4. work: 4-frame working loop facing the viewer, standing, both hands typing on an invisible keyboard at waist height / writing (small arm movement each frame), do NOT draw the desk or keyboard. Side-view rows face RIGHT. Character: an editor-in-chief: round black glasses, neat short dark-brown hair with a side part, deep-red blazer over a white shirt, dark grey trousers, brown shoes, a red pen in the hand."
+  },
+  "editor_b": {
+   "ref": "raw/editor_a.png",
+   "layout": "sheet",
+   "prompt": "Rows, top to bottom: 1. talk_down: 4-frame talking loop facing the viewer, mouth open/closed, one hand gesturing. 2. talk_side: 4-frame talking loop facing RIGHT in profile, gesturing with a hand. 3. cheer: 4-frame celebration facing the viewer, both arms up, small hop, happy face. 4. action: 4-frame stamping: raise a big red rubber stamp, slam it down at waist height, lift it again (do NOT draw paper or table). Side-view rows face RIGHT. Character: the SAME character as the attached sheet, identical outfit, hair and colours: an editor-in-chief: round black glasses, neat short dark-brown hair with a side part, deep-red blazer over a white shirt, dark grey trousers, brown shoes, a red pen in the hand."
+  },
+  "writer_a": {
+   "ref": "raw/editor_a.png",
+   "layout": "sheet",
+   "prompt": "Rows, top to bottom: 1. walk_down: 4-frame walk cycle facing the viewer (legs clearly alternating). 2. walk_up: 4-frame walk cycle seen from behind. 3. walk_side: 4-frame walk cycle facing RIGHT in profile. 4. work: 4-frame working loop facing the viewer, standing, both hands typing on an invisible keyboard at waist height / writing (small arm movement each frame), do NOT draw the desk or keyboard. Side-view rows face RIGHT. Character: a young novelist: messy chestnut hair, mustard-yellow oversized hoodie with the hood down, blue jeans, white sneakers, holding a white coffee mug."
+  },
+  "writer_b": {
+   "ref": "raw/writer_a.png",
+   "layout": "sheet",
+   "prompt": "Rows, top to bottom: 1. talk_down: 4-frame talking loop facing the viewer, mouth open/closed, one hand gesturing. 2. talk_side: 4-frame talking loop facing RIGHT in profile, gesturing with a hand. 3. cheer: 4-frame celebration facing the viewer, both arms up, small hop, happy face. 4. action: 4-frame coffee sip: lift the mug, sip, lower it, sigh happily. Side-view rows face RIGHT. Character: the SAME character as the attached sheet, identical outfit, hair and colours: a young novelist: messy chestnut hair, mustard-yellow oversized hoodie with the hood down, blue jeans, white sneakers, holding a white coffee mug."
+  },
+  "worldbuilder_a": {
+   "ref": "raw/editor_a.png",
+   "layout": "sheet",
+   "prompt": "Rows, top to bottom: 1. walk_down: 4-frame walk cycle facing the viewer (legs clearly alternating). 2. walk_up: 4-frame walk cycle seen from behind. 3. walk_side: 4-frame walk cycle facing RIGHT in profile. 4. work: 4-frame working loop facing the viewer, standing, both hands typing on an invisible keyboard at waist height / writing (small arm movement each frame), do NOT draw the desk or keyboard. Side-view rows face RIGHT. Character: a worldbuilder / lore keeper: wavy dark-green hair tied back, olive-green explorer vest over a cream shirt, a brown leather satchel, brown boots, a rolled parchment map under one arm."
+  },
+  "worldbuilder_b": {
+   "ref": "raw/worldbuilder_a.png",
+   "layout": "sheet",
+   "prompt": "Rows, top to bottom: 1. talk_down: 4-frame talking loop facing the viewer, mouth open/closed, one hand gesturing. 2. talk_side: 4-frame talking loop facing RIGHT in profile, gesturing with a hand. 3. cheer: 4-frame celebration facing the viewer, both arms up, small hop, happy face. 4. action: 4-frame unrolling the parchment map in both hands and studying it, facing the viewer. Side-view rows face RIGHT. Character: the SAME character as the attached sheet, identical outfit, hair and colours: a worldbuilder / lore keeper: wavy dark-green hair tied back, olive-green explorer vest over a cream shirt, a brown leather satchel, brown boots, a rolled parchment map under one arm."
+  },
+  "reader_a": {
+   "ref": "raw/editor_a.png",
+   "layout": "sheet",
+   "prompt": "Rows, top to bottom: 1. walk_down: 4-frame walk cycle facing the viewer (legs clearly alternating). 2. walk_up: 4-frame walk cycle seen from behind. 3. walk_side: 4-frame walk cycle facing RIGHT in profile. 4. work: 4-frame working loop facing the viewer, standing, both hands typing on an invisible keyboard at waist height / writing (small arm movement each frame), do NOT draw the desk or keyboard. Side-view rows face RIGHT. Character: a book critic / reader: long lavender-grey hair with a small hair clip, cozy oversized soft-purple knitted cardigan over a pale dress, warm tights, slippers, an open book held in both hands."
+  },
+  "reader_b": {
+   "ref": "raw/reader_a.png",
+   "layout": "sheet",
+   "prompt": "Rows, top to bottom: 1. talk_down: 4-frame talking loop facing the viewer, mouth open/closed, one hand gesturing. 2. talk_side: 4-frame talking loop facing RIGHT in profile, gesturing with a hand. 3. cheer: 4-frame celebration facing the viewer, both arms up, small hop, happy face. 4. action: 4-frame reading: hold the open book, turn a page, nod. Side-view rows face RIGHT. Character: the SAME character as the attached sheet, identical outfit, hair and colours: a book critic / reader: long lavender-grey hair with a small hair clip, cozy oversized soft-purple knitted cardigan over a pale dress, warm tights, slippers, an open book held in both hands."
+  },
+  "props_a": {
+   "ref": "raw/editor_a.png",
+   "layout": "props",
+   "prompt": "Cozy wooden novel-publishing office furniture, all seen from the same top-down three-quarter view. Cells, left to right, top to bottom: 1. a large dark-walnut executive desk with a desktop monitor, neat paper stacks and a red pen, front view. 2. a light-wood writing desk with an open laptop, a coffee mug and crumpled paper balls. 3. a tall wooden bookshelf packed with colourful books, front view. 4. a library desk with an open atlas, a globe and a candle-style lamp. 5. a long oval wooden meeting table seen from above at three-quarter angle (no chairs). 6. a blank white whiteboard on a wheeled stand (completely empty writing surface). 7. a wide low wooden shelf with labelled-less manuscript boxes and paper stacks. 8. a plump cozy armchair in warm rust-orange fabric with a cushion. 9. a small round side table with a teapot and cup. 10. a tall brass floor lamp with a warm cream shade. 11. a big leafy monstera plant in a terracotta pot. 12. a small coffee counter with an espresso machine and mugs. 13. a wooden office chair seen from behind. 14. a wooden office chair seen from the front. 15. a short stack of hardcover books. 16. a cork notice board with pinned paper notes and string (no writing)."
+  },
+  "props_b": {
+   "ref": "raw/props_a.png",
+   "layout": "props",
+   "prompt": "More items for the same cozy office, same view and style as the attached sheet. Cells, left to right, top to bottom: 1. a tall window with wooden frame and warm daylight, curtains on both sides (wall-mounted, front view). 2. a round wooden wall clock. 3. a framed landscape painting. 4. a small potted succulent. 5. a wooden filing cabinet with brass handles. 6. a cozy small two-seat sofa in deep green velvet. 7. a round woven rug in warm red and cream patterns, seen from above. 8. a hanging pendant lamp. 9. a wooden standing coat rack with a scarf. 10. a small trash bin with crumpled paper. 11. a water cooler. 12. a tall grandfather-style bookcase with a ladder. 13. a wooden crate of scrolls. 14. a dog bed with a sleeping shiba inu. 15. a side table with a record player. 16. a stack of three cardboard moving boxes."
+  },
+  "props_c": {
+   "ref": "raw/props_a.png",
+   "layout": "props",
+   "prompt": "Same cozy office style as the attached sheet, same three-quarter front view. IMPORTANT: NO chairs anywhere, and keep the MIDDLE of every desk top EMPTY and low (a person will stand right behind the middle of each desk, so nothing tall in the centre). Cells, left to right, top to bottom: 1. a large dark-walnut executive desk, a small monitor at the far LEFT end, a neat paper stack and a red-pen cup at the far RIGHT end, middle empty. 2. a light-wood writing desk, a small open laptop at the far LEFT end, a coffee mug and crumpled paper balls at the far RIGHT end, middle empty. 3. a wooden library desk, a globe at the far LEFT end, a brass candle lamp at the far RIGHT end, a flat open atlas lying in the middle. 4. a long rectangular wooden meeting table, empty top, seen from the three-quarter front view. 5. a tall wooden bookshelf packed with books, front view. 6. a tall wooden bookshelf packed with books and a few scrolls, front view. 7. a red rubber stamp. 8. a white sheet of paper with grey text lines, slightly curled. 9. a wooden desk chair seen from the front. 10. a wooden desk chair seen from the front, cushioned in green. 11. a wooden desk chair seen from the front, cushioned in purple. 12. a wooden stool. 13. a small round cozy rug in purple. 14. a small rectangular rug in red. 15. a potted fern. 16. a small framed certificate."
+  }
+ }
+}

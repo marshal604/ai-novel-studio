@@ -1,5 +1,21 @@
 # AI Novel Studio
 
+A four-role AI editorial office that writes Traditional Chinese novels inside Claude Code, plus a pixel-art
+**office** that replays the team at work. The sample novel 《羽球人生》 (Badminton Life) was written by these agents;
+the time-lapse below is the actual run: kickoff meeting, drafting, parallel reviews, revision and sign-off for
+chapters 1 and 2.
+
+![The AI team writing 羽球人生, time-lapse](office/docs/media/office-timelapse.gif)
+
+▶ [Full time-lapse (2 min, 720p)](office/docs/media/office-timelapse-web.mp4) · [How the office works](office/README.md)
+
+| | Old workflow (ch1) | This workflow (ch2) |
+|---|---|---|
+| Cost | $1.54 | **$0.87** |
+| Wall clock | 6m07s | **4m18s** |
+| Subagent tokens | 608k | **150k** |
+| Hand-written log calls | 18 | **0** |
+
 ## How it works
 A four-role "editorial office" writes Traditional Chinese novels inside Claude Code.
 The main session is the editor-in-chief; the other three roles are one-shot custom subagents in `.claude/agents/`.

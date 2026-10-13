@@ -1,0 +1,6 @@
+node_modules
+dist
+art/raw
+art/contact
+art/rec
+art/*.log
