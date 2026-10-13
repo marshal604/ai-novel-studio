@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
-import { acceptChapter } from '../lib/accept.mjs';
+import { acceptChapter, importChapter } from '../lib/accept.mjs';
 import { bodySha, checkChapter } from '../lib/chapter.mjs';
 import { handleHook } from '../lib/hook.mjs';
 import { appendEvents, meetingEvents, ROLES } from '../lib/log.mjs';
@@ -18,6 +18,7 @@ const USAGE = `studio <command>
   sha <chapter.md>                   body hash for reviews
   review <file.json>                 validate a review or resolution file
   accept <slug> <n> [--waive C1,W2 --reason text] [--canon-verified]
+  import <slug> <n> --reason text    record a chapter accepted by an earlier workflow
   metrics <stream.jsonl>             cost/turn/tool summary of a claude -p run
   hook                               Claude Code hook entry (reads stdin)`;
 
@@ -43,6 +44,12 @@ const report = ({ errors = [], warnings = [] }) => {
 
 const need = (count) => {
   if (args.length < count) throw new Error(`"${command}" needs ${count} argument(s)\n\n${USAGE}`);
+};
+
+const chapterArg = (raw) => {
+  const chapter = Number(raw);
+  if (!Number.isInteger(chapter) || chapter < 1) throw new Error(`chapter must be a positive integer, got "${raw}"`);
+  return chapter;
 };
 
 const agentName = (raw) => ROLES[raw] ?? raw;
@@ -71,10 +78,16 @@ const commands = {
     if (errors.length === 0) console.log('ok');
     return report({ errors });
   },
+  import: () => {
+    need(2);
+    if (!values.reason) throw new Error('import needs --reason (where the chapter was accepted)');
+    const result = importChapter(root, args[0], chapterArg(args[1]), values.reason);
+    if (result.errors.length === 0) console.log(result.noop ? 'already accepted, nothing changed' : `chapter ${args[1]} imported`);
+    return report(result);
+  },
   accept: () => {
     need(2);
-    const chapter = Number(args[1]);
-    if (!Number.isInteger(chapter) || chapter < 1) throw new Error(`chapter must be a positive integer, got "${args[1]}"`);
+    const chapter = chapterArg(args[1]);
     const waive = values.waive ? values.waive.split(',').map((s) => s.trim()).filter(Boolean) : [];
     const result = acceptChapter(root, args[0], chapter, { waive, reason: values.reason ?? '', canonVerified: values['canon-verified'] ?? false });
     if (result.errors.length === 0) console.log(result.noop ? 'already accepted, nothing changed' : `chapter ${chapter} accepted`);

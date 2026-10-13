@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { evaluateAcceptance, acceptChapter } from '../lib/accept.mjs';
+import { evaluateAcceptance, acceptChapter, importChapter } from '../lib/accept.mjs';
 import { bodySha, parseFrontmatter } from '../lib/chapter.mjs';
 import { newNovel } from '../lib/novel.mjs';
 import { chapterText, review, issue, resolution } from './factories.mjs';
@@ -147,4 +147,25 @@ test('registry progress reflects the highest accepted chapter', () => {
   writeFileSync(join(dir, 'accepted.json'), JSON.stringify(record));
   acceptChapter(root, 'b', 1, {});
   assert.match(readFileSync(join(root, 'novels', 'registry.md'), 'utf8'), /第2章通過/);
+});
+
+test('importChapter records a legacy-accepted chapter without reviews and is idempotent', () => {
+  const root = tempRoot();
+  newNovel(root, 'b', '書');
+  const dir = join(root, 'novels', 'b');
+  writeFileSync(join(dir, 'chapters', 'ch01.md'), chapterText({ status: '通過' }));
+  assert.deepEqual(importChapter(root, 'b', 1, '舊流程').errors, []);
+  const record = JSON.parse(readFileSync(join(dir, 'accepted.json'), 'utf8')).chapters['1'];
+  assert.deepEqual([record.sha, record.legacy], [sha, '舊流程']);
+  assert.match(readFileSync(join(root, 'novels', 'registry.md'), 'utf8'), /第1章通過/);
+  const events = readEvents(root).length;
+  assert.equal(importChapter(root, 'b', 1, '舊流程').noop, true);
+  assert.equal(readEvents(root).length, events);
+});
+
+test('importChapter refuses a chapter with broken frontmatter', () => {
+  const root = tempRoot();
+  newNovel(root, 'b', '書');
+  writeFileSync(join(root, 'novels', 'b', 'chapters', 'ch01.md'), chapterText({ omit: ['title'] }));
+  assert.match(importChapter(root, 'b', 1, 'x').errors.join(), /title/);
 });
