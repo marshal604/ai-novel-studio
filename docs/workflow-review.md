@@ -59,7 +59,7 @@
 - 量測要看「每個通過章節的成本」，分開設定成本與章節成本。
 
 ### 第二輪：我的回應
-接受：三位創作角色都用 Sonnet（Haiku 只當 opt-in 實驗）；問題回報管道；brief 模板；H讀者 先讀章節；作家自我檢查；每位審查每輪一個 JSON；最多 2 輪審查 + H總編 裁決；`studio accept` 腳本；字數只警告；CLAUDE.md < 3KB。
+接受：三位創作角色都用 Sonnet（Haiku 只當 opt-in 實驗）；問題回報管道；brief 模板；H讀者 先讀章節；作家自我檢查；每位審查每輪一個 JSON；最多 2 輪審查 + H總編 裁決；`studio accept` 腳本；字數只警告；CLAUDE.md 約 3.5KB。
 延後：外部 Node 狀態機逐階段呼叫 `claude -p`（前景並行 Agent 已解決重入成本，外部 orchestrator 讓零件加倍）；log 加 run id；設定/章節分開量測（改成分開執行）。
 保留：每章一筆「brief 交接」meeting 事件（辦公室畫面有會議室，而 brief 是真實步驟）。
 
@@ -87,3 +87,22 @@
 | 外部狀態機 | 延後 | 先量測新流程再決定 |
 | log run id | 延後 | 維持 viewer 相容 |
 | 三明治回饋 / 慶祝 / 關懷 / 模擬會議 | 刪除（慶祝與會議保留成腳本事件） | 對成品沒有貢獻 |
+
+## 4. 第三輪：Codex 程式碼審查（實作後）
+
+Codex 對 `lib/` 與文件做 read-only 審查，提出 11 點。
+
+| 發現 | 處理 |
+|------|------|
+| 審查檔放錯 slot（critic 複製成 world）也能過 | 接受：比對 reviewer / chapter / 檔名 round |
+| resolution 的 chapter 沒比對 | 接受 |
+| 作家 fixed 的 major 不經複核就能定稿，與 CLAUDE.md 不一致 | 接受：blocker / major 一律要 round 2 或豁免，round > 2 擋下 |
+| CRLF frontmatter、空 `title:` 被當成 list | 接受 |
+| 同 sha 重跑卻先跑 gate，豁免過的章節重跑會失敗 | 接受：先判斷 no-op |
+| accepted.json 先寫、log 後寫，失敗後重跑會漏 log | 接受：accepted.json 最後寫 |
+| 改稿後 delta 為空，舊 continuity 區段殘留 | 接受：空 delta 移除區段 |
+| 回改前章讓 registry 進度倒退 | 接受：取已定稿最大章 |
+| hook 讀 stdin 失敗會 exit 1 | 接受 |
+| 相對路徑的 log 檔沒被忽略 | 接受：先 resolve |
+| declined 的 minor 應擋下 | 拒絕：minor 是作家的創作判斷，只警告 |
+| frontmatter 重複 key 要擋 | 拒絕：YAGNI，frontmatter 由 H作家 依模板產生 |

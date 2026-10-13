@@ -60,7 +60,7 @@ novels/{slug}/
 - 從 stream-json 算：花費、tokens、主 session 重入次數、工具呼叫分佈、subagent 次數與 tokens、手寫 log 次數。
 
 ### T8 流程文件
-- CLAUDE.md < 3KB，只寫 H總編 的流程與規則。
+- CLAUDE.md 約 3.5KB（原 10KB），只寫 H總編 的流程與規則。
 - `.claude/agents/{writer,worldbuilder,critic}.md`：frontmatter `model: sonnet`、tools 白名單、token 預算、輸入/輸出契約。
 - `templates/brief.md`。settings.json：移除 agent-teams 與 debug hooks，改用 `studio hook`。
 
