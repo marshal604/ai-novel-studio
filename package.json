@@ -1,0 +1,11 @@
+{
+  "name": "ai-novel-studio",
+  "private": true,
+  "type": "module",
+  "bin": { "studio": "bin/studio.mjs" },
+  "scripts": {
+    "test": "node --test 'test/*.test.mjs'",
+    "studio": "node bin/studio.mjs"
+  },
+  "engines": { "node": ">=22" }
+}
